@@ -72,7 +72,7 @@ pub fn App() -> impl IntoView {
                     <Route path="" view=|| view! { <Layout/> }>
                         <Route path=AppRoutes::Welcome view=|| view! { <PageWelcome/> }/>
                         <DocRoutes path=AppRoutes::Doc/>
-                        <Route path=AppRoutes::NotFound view=|| view! { <PageErr404 /> }/>
+                        // <Route path=AppRoutes::NotFound view=|| view! { <PageErr404 /> }/>
                     </Route>
                 </Routes>
             </Router>

@@ -10,7 +10,7 @@ mod be_services;
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
-    
+    use dotenv::dotenv;
     use axum::{routing::post, Router};
     use leptos::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
@@ -44,14 +44,14 @@ async fn main() {
     // let wallet_address:Address= wallet.address();
     // println!("wallet_address: {}", anvil_service::create_new_wallet().unwrap());
 
-    // let LEPTOS_OUTPUT_NAME = env::var("LEPTOS_OUTPUT_NAME").expect("$LEPTOS_OUTPUT_NAME is not set");
-    // let LEPTOS_SITE_ROOT = env::var("LEPTOS_SITE_ROOT").expect("$LEPTOS_SITE_ROOT is not set");
-    // let LEPTOS_SITE_PKG_DIR = env::var("LEPTOS_SITE_PKG_DIR").expect("$LEPTOS_SITE_PKG_DIR is not set");
+    let LEPTOS_OUTPUT_NAME = env::var("LEPTOS_OUTPUT_NAME").expect("$LEPTOS_OUTPUT_NAME is not set");
+    let LEPTOS_SITE_ROOT = env::var("LEPTOS_SITE_ROOT").expect("$LEPTOS_SITE_ROOT is not set");
+    let LEPTOS_SITE_PKG_DIR = env::var("LEPTOS_SITE_PKG_DIR").expect("$LEPTOS_SITE_PKG_DIR is not set");
 
 
-    // println!("LEPTOS_OUTPUT_NAME {}",LEPTOS_OUTPUT_NAME);
-    // println!("LEPTOS_SITE_ROOT {}",LEPTOS_SITE_ROOT);
-    // println!("LEPTOS_SITE_PKG_DIR {}",LEPTOS_SITE_PKG_DIR );
+    println!("LEPTOS_OUTPUT_NAME {}",LEPTOS_OUTPUT_NAME);
+    println!("LEPTOS_SITE_ROOT {}",LEPTOS_SITE_ROOT);
+    println!("LEPTOS_SITE_PKG_DIR {}",LEPTOS_SITE_PKG_DIR );
 
     let log_filter = tracing_subscriber::filter::Targets::new()
         .with_default(tracing::Level::INFO)
@@ -78,7 +78,12 @@ async fn main() {
     // <https://github.com/leptos-rs/start-axum#executing-a-server-on-a-remote-machine-without-the-toolchain>
     // Alternately a file can be specified such as Some("Cargo.toml")
     // The file would need to be included with the executable when moved to deployment
-    let conf = get_configuration(Some("/home/imc/BitMole/TraderMock/Cargo.toml")).await.unwrap();
+    dotenv().ok();
+    let cargo_toml_file = std::env::var("CARGO_TOML_FILE").expect("CARGO_TOML_FILE must be set.");
+
+    println!("cargo_toml_file: {}", cargo_toml_file);
+
+    let conf = get_configuration(Some(&cargo_toml_file.to_string())).await.unwrap();
     let leptos_options = conf.leptos_options;
     let addr = leptos_options.site_addr;
     println!("leptos_options server ok...{}", addr);
