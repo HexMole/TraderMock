@@ -25,24 +25,6 @@ async fn main() {
         util::SubscriberInitExt,
         Layer,
     };
-    // use ethers::{
-    //     contract::{abigen, ContractFactory},
-    //     core::utils::Anvil,
-    //     core::types::{Address},
-    //     middleware::SignerMiddleware,
-    //     providers::{Http, Provider, StreamExt, Ws},
-    //     signers::{LocalWallet, Signer},
-    //     solc::{Artifact, Project, ProjectPathsConfig},
-    //     core::utils::{parse_ether},
-    // };
-    // use eyre::Result;
-    // use std::{path::PathBuf, sync::Arc, time::Duration, ptr::addr_of};
-    // use crate::services::anvil_service;
-
-    // 2. instantiate our wallet
-    // let wallet: LocalWallet = anvil.keys()[0].clone().into();
-    // let wallet_address:Address= wallet.address();
-    // println!("wallet_address: {}", anvil_service::create_new_wallet().unwrap());
 
     let LEPTOS_OUTPUT_NAME = env::var("LEPTOS_OUTPUT_NAME").expect("$LEPTOS_OUTPUT_NAME is not set");
     let LEPTOS_SITE_ROOT = env::var("LEPTOS_SITE_ROOT").expect("$LEPTOS_SITE_ROOT is not set");
@@ -73,11 +55,7 @@ async fn main() {
         .with(fmt_layer_filtered)
         .init();
 
-    // Setting get_configuration(None) means we'll be using cargo-leptos's env values
-    // For deployment these variables are:
-    // <https://github.com/leptos-rs/start-axum#executing-a-server-on-a-remote-machine-without-the-toolchain>
-    // Alternately a file can be specified such as Some("Cargo.toml")
-    // The file would need to be included with the executable when moved to deployment
+
     dotenv().ok();
     let cargo_toml_file = std::env::var("CARGO_TOML_FILE").expect("CARGO_TOML_FILE must be set.");
 
@@ -106,8 +84,4 @@ async fn main() {
 }
 
 #[cfg(not(feature = "ssr"))]
-pub fn main() {
-    // no client-side main function
-    // unless we want this to work with e.g., Trunk for a purely client-side app
-    // see lib.rs for hydration function instead
-}
+pub fn main() {}

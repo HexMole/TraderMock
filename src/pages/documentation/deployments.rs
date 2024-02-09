@@ -91,30 +91,6 @@ pub async fn get_deployed_contracts() -> Result<Vec<ContractModel>, ServerFnErro
     Ok(cloned_contractList)
 }
 
-#[server]
-pub async fn deploy_contract() -> Result<bool, ServerFnError> {
-    let contractLength = ContractList.lock().unwrap().len();
-    println!("deploy_contract {}",contractLength);
-    Ok(contractLength==0)
-}
-
-#[server]
-pub async fn list_post_metadata() -> Result<Vec<PostMetadata>, ServerFnError> {
-    println!("list_post_metadata");
-    // tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-    Ok(POSTS
-        .iter()
-        .map(|data| PostMetadata {
-            id: data.id,
-            title: data.title.clone(),
-        })
-        .collect())
-}
-
-// #[derive(Params, Copy, Clone, Debug, PartialEq, Eq)]
-// pub struct PostParams {
-//     id: usize,
-// }
 
 #[component]
 pub fn Deployments() -> impl IntoView {
@@ -123,70 +99,42 @@ pub fn Deployments() -> impl IntoView {
     view! {
         <h1>"Deployed Contracts"</h1>
         <Suspense fallback=move || view! { <p>"Loading..."</p> } >
-        {move || {
-            contracts_deployed_rsc.and_then(|contracts| {
-                contracts.iter()
-                        .map(|contract| view! {
-                            <li>{contract.Name.clone()}</li>
-                        })
-                        .collect_view()
-                })
-            }
-        }
+        <TableContainer>
+                <Table bordered=true hoverable=true>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHeaderCell min_width=true>"#"</TableHeaderCell>
+                            <TableHeaderCell>"Name"</TableHeaderCell>
+                            <TableHeaderCell>"Type"</TableHeaderCell>
+                            <TableHeaderCell>"Name"</TableHeaderCell>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                                {move || {
+                                    contracts_deployed_rsc.and_then(|contracts| {
+                                        contracts.iter()
+                                                .map(|contract| {
+                                                            let contract_name = contract.Name.clone();
+                                                            let contract_ContractAddress = contract.ContractAddress.clone();
+                                                            let contract_type = contract.Type.clone();
+                                                            view! {
+                                                                <TableRow>
+                                                                    <TableCell>"#"</TableCell>
+                                                                    <TableCell>{contract_name}</TableCell>
+                                                                    <TableCell>{contract_ContractAddress}</TableCell>
+                                                                    <TableCell>{contract_type}</TableCell>
+                                                                </TableRow>
+                                                    }
+                                                }).collect_view()
+                                        })
+                                    }
+                                }
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Suspense>
     }
 }
 
 
-#[derive(Error, Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum PostError {
-    #[error("Invalid post ID.")]
-    InvalidId,
-    #[error("Post not found.")]
-    PostNotFound,
-    #[error("Server error.w")]
-    ServerError,
-}
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Post {
-    id: usize,
-    title: String,
-    content: String,
-}
-
-// Dummy API
-lazy_static! {
-    static ref POSTS: Vec<Post> = vec![
-        Post {
-            id: 0,
-            title: "My first post".to_string(),
-            content: "This is my first post".to_string(),
-        },
-        Post {
-            id: 1,
-            title: "My second post".to_string(),
-            content: "This is my second post".to_string(),
-        },
-        Post {
-            id: 2,
-            title: "My third post".to_string(),
-            content: "This is my third post".to_string(),
-        },
-    ];
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PostMetadata {
-    id: usize,
-    title: String,
-}
-
-
-
-#[server]
-pub async fn get_post(id: usize) -> Result<Option<Post>, ServerFnError> {
-    println!("get_post");
-    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-    Ok(POSTS.iter().find(|post| post.id == id).cloned())
-}

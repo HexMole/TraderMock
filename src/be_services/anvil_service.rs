@@ -43,9 +43,5 @@ cfg_if! { if #[cfg(feature = "ssr")] {
         return Ok(wallet_address);
     }
 
-    // pub fn  ContractLength() -> Result<i32>{
-    //     let len = ContractList.lock().unwrap().len();
-    //     return Ok(len);
-    // }
 
 }}
