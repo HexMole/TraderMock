@@ -10,6 +10,8 @@ mod be_services;
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
+    use crate::be_services::anvil_service::deploy_erc20Mintable_deposit10_Weth;
+    use be_services::anvil_service;
     use dotenv::dotenv;
     use axum::{routing::post, Router};
     use leptos::*;
@@ -67,6 +69,8 @@ async fn main() {
     println!("leptos_options server ok...{}", addr);
 
     let routes = generate_route_list(App);
+
+    anvil_service::deploy_erc20Mintable_deposit10_Weth().await;
 
     // build our application with a route
     let app = Router::new()

@@ -9,15 +9,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use lazy_static::lazy_static;
 
-
-// use gloo_net::http::Request;
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Cat {
-    url: String,
-}
-
-
-
 type CatCount = usize;
 
 #[cfg(feature = "ssr")]
@@ -34,60 +25,15 @@ use ethers::{
 
 
 #[cfg(feature = "ssr")]
-use crate::be_services::anvil_service;
-
-#[server]
-async fn fetch_cats(count: CatCount) -> Result<Vec<String>, ServerFnError> {
-    println!("Fetching cats...{}"   , count);
-    if count > 0 {
-        // // make the request
-        let newAddress=anvil_service::create_new_wallet().unwrap();
-        println!("wallet_address: {}",newAddress);
-        println!("fetched?");
-        let res = vec![newAddress.to_string()];
-        Ok(res)
-    } else {
-        let res= vec![];
-        Ok(res)
-        // Err(CatError::NonZeroCats.into())
-    }
-}
-
-
-
-#[cfg(feature = "ssr")]
 use crate::be_services::anvil_service::*;
 
 use crate::be_services::anvil_service::ContractModel;
 #[server]
 pub async fn get_deployed_contracts() -> Result<Vec<ContractModel>, ServerFnError> {
-    println!("uniswap_contracts_deployed");
-    // let contracts:Vec<ContractModel> =ContractList.lock().unwrap().clone();
-
-    let contractModel1=ContractModel{
-        Type:"contract1".to_string(),
-        ContractAddress: "someaddress1".to_string(),
-        Name:"contract Name1".to_string(),
-
-    };
-
-    let contractModel2=ContractModel{
-        Type:"contract2".to_string(),
-        ContractAddress: "someaddress2".to_string(),
-        Name:"contract Name2".to_string(),
-
-    };
-
-
-    ContractList.lock().unwrap().push(contractModel1);
-    ContractList.lock().unwrap().push(contractModel2);
-
+    
     let cloned_contractList= ContractList.lock().unwrap().clone();
 
-
-    //  contractLength.push(contractModel);
-        
-    // });
+    println!("uniswap_contracts_deployed {}", cloned_contractList.len());
     Ok(cloned_contractList)
 }
 
