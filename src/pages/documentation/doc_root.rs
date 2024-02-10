@@ -13,7 +13,7 @@ use crate::pages::documentation::overview::PageOverview;
 
 use crate::pages::documentation::deployments::Deployments;
 
-use crate::pages::documentation::usage::PageUsage;
+use crate::pages::documentation::trade_history::TradeHistory;
 // use crate::APP_BAR_HEIGHT;
 pub const APP_BAR_HEIGHT: Height = Height::Em(3.5);
 #[derive(Debug, Copy, Clone)]
@@ -140,7 +140,7 @@ pub fn DocRoutes<P: Display>(path: P) -> impl IntoView {
             <Route path="" view=|| view! { <Redirect path=DocRoutes::Overview/> }/>
             <Route path=DocRoutes::Overview view=|| view! { <PageOverview/> }/>
             <Route path=DocRoutes::Installation view=|| view! { <PageInstallation/> }/>
-            <Route path=DocRoutes::Usage view=|| view! { <PageUsage/> }/>
+            <Route path=DocRoutes::Usage view=|| view! { <TradeHistory/> }/>
             <Route path=DocRoutes::Themes view=|| view! { <Deployments/> }/>
         </Route>
     }
@@ -170,8 +170,7 @@ pub fn DocLayout() -> impl IntoView {
                 <Link href=DocRoutes::Overview class="item" on:click=move |_| close_doc_drawer_on_mobile()>"Overview"</Link>
                 <Link href=DocRoutes::Themes class="item" on:click=move |_| close_doc_drawer_on_mobile()>"Deployments"</Link>
                 <Link href=DocRoutes::Installation class="item" on:click=move |_| close_doc_drawer_on_mobile()>"Uniswap Pools"</Link>
-                <Link href=DocRoutes::Usage class="item" on:click=move |_| close_doc_drawer_on_mobile()>"History"</Link>
-                // <Link href=DocRoutes::Changelog class="item" on:click=move |_| close_doc_drawer_on_mobile()>"Changelog"</Link>
+                <Link href=DocRoutes::Usage class="item" on:click=move |_| close_doc_drawer_on_mobile()>"Trade History"</Link>
             </Stack>
         </DrawerSection>
     };

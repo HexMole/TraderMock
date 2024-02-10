@@ -33,4 +33,4 @@ pub mod deployments;
 // pub mod toggle;
 // pub mod transition;
 // pub mod typography;
-pub mod usage;
+pub mod trade_history;

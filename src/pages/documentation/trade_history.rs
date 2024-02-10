@@ -5,7 +5,7 @@ use leptos::*;
 use crate::pages::documentation::doc_root::DocRoutes;
 
 #[component]
-pub fn PageUsage() -> impl IntoView {
+pub fn TradeHistory() -> impl IntoView {
     view! {
         <H1>"Usage"</H1>
 
