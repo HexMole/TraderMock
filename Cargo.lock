@@ -2916,6 +2916,7 @@ dependencies = [
  "actix-web",
  "axum",
  "axum-server",
+ "byteorder",
  "cfg-if",
  "color-spantrace",
  "console_error_panic_hook",

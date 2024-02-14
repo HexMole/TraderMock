@@ -12,10 +12,34 @@ pub struct ContractModel
     pub Name:String,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ContractsEventsModel
+{
+    pub EventType:String,
+    pub From:String,
+    pub To:String,
+    pub Value:String,
+    pub blockNumber:u64,
+    pub TransactionHash:String,
+
+}
+
+#[derive(Default)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PoolModel
+{
+    pub PoolName:String,
+    pub Token0Name:String,
+    pub Token1Name:String,
+    pub Token0:Vec<ContractsEventsModel>,
+    pub Token1:Vec<ContractsEventsModel>,
+}
+
+
 cfg_if! { if #[cfg(feature = "ssr")] {
 
     use std::{ops::Deref, sync::Mutex};
-
+    use byteorder::{ByteOrder, BigEndian};
     
     use ethers::{
         contract::{abigen, ContractFactory},
@@ -29,7 +53,7 @@ cfg_if! { if #[cfg(feature = "ssr")] {
     };
     use eyre::Result;
     use std::{path::PathBuf, sync::Arc, time::Duration, ptr::addr_of};
-
+    use ethers::prelude::*;
     abigen!(
         IUniswapV3Pool, "src/abi/Pool.json",
     
@@ -84,7 +108,7 @@ cfg_if! { if #[cfg(feature = "ssr")] {
     lazy_static! {
         pub static ref AnvilInst: Mutex<ethers_core::utils::AnvilInstance> = Mutex::new(Anvil::new().args(["--code-size-limit", "100000"]).spawn());
         pub static ref ContractList: Mutex<Vec<ContractModel>> = Mutex::new(Vec::new());
-    }
+   }
 
     pub fn  create_new_wallet() -> Result<Address>{
         let wallet: LocalWallet = AnvilInst.lock().unwrap().keys()[0].clone().into();
@@ -97,13 +121,111 @@ cfg_if! { if #[cfg(feature = "ssr")] {
     {
         let contractModel1=ContractModel{
             Type:contract_type.to_string(),
-            ContractAddress: address.to_string(),
+            ContractAddress: format!("{:?}", address),
             Name:contract_name.clone(),
     
         };
         ContractList.lock().unwrap().push(contractModel1);
     }
 
+    pub async fn get_pool_tokens_transaction_history()->Result<Vec<PoolModel>>  { 
+
+        let wallet: LocalWallet = AnvilInst.lock().unwrap().keys()[0].clone().into();
+        let wallet_address:Address= wallet.address();
+            // 3. connect to the network
+        // 3. connect to the network
+
+        let provider =
+        Provider::<Ws>::connect(AnvilInst.lock().unwrap().ws_endpoint()).await.unwrap().interval(Duration::from_millis(1u64));
+
+        let client: Arc<SignerMiddleware<Provider<Ws>, ethers_signers::Wallet<ecdsa::SigningKey<ethers_core::k256::Secp256k1>>>> = Arc::new(SignerMiddleware::new(provider, wallet.with_chain_id(AnvilInst.lock().unwrap().chain_id())));
+
+
+        let pools:Vec<ContractModel> =ContractList.lock().unwrap().iter().filter(|item| item.Type=="UniswapV3Pool").map(|ite| ite.clone()).collect();
+        println!("pools.len() {}",pools.len());
+        let mut pool_model:Vec<PoolModel> = vec![];
+
+        for item in pools.iter() {
+            println!("pools.iter {}",item.Name.clone());
+            let address:Address=  item.ContractAddress.clone().as_str().parse().unwrap();
+            println!("UniswapV3Pool::new...:");
+            let pool_contract = IUniswapV3Pool::new(address, client.clone());
+            println!("IUniswapV3Pool created");
+            let token0:Address= pool_contract.token_0().call().await.unwrap();
+            let token1:Address= pool_contract.token_1().call().await.unwrap();
+            
+            println!("token0: {}",format!("{:?}", token0));
+            println!("token1: {}",format!("{:?}", token1));
+
+            let contract1 = IERC20Contract::new(token0, client.clone());
+            let contract2 = IERC20Contract::new(token1, client.clone());
+
+
+            let events_0 = listen_all_events(&contract1).await.unwrap();
+            // println!("events_0: {}", serde_json::to_string(&events_0)?);
+            let events_1 = listen_all_events(&contract2).await.unwrap();
+            // println!("events_1: {}", serde_json::to_string(&events_1)?);
+            let token0Name = contract1.name().call().await.unwrap();
+            let token1Name = contract2.name().call().await.unwrap();
+
+            let contract_event_model = PoolModel{
+                PoolName:item.Name.clone(), 
+                Token0:events_0.into(),
+                Token1:events_1.into(),
+                Token0Name:token0Name.clone(),
+                Token1Name:token1Name.clone(),
+            };
+
+            pool_model.push(contract_event_model);
+
+        }
+        // println!("pool_model: {}", serde_json::to_string(&pool_model)?);
+        Ok(pool_model)
+
+    }
+
+    pub async fn listen_all_events(contract: &IERC20Contract<SignerMiddleware<Provider<Ws>, Wallet<ecdsa::SigningKey<k256::Secp256k1>>>>) -> Result<Vec<ContractsEventsModel>> {
+    
+        println!("listen_all_events: {}",contract.name().call().await.unwrap());
+        let mut event_vec:Vec<ContractsEventsModel>=vec![];
+
+        let mut pool_Model:Vec<PoolModel>=vec![];
+        // Subscribe Transfer events
+        let events = contract.events().from_block(0);
+        let mut stream = events.stream().await?.with_meta().take(3);
+        while let Some(Ok((event, meta))) = stream.next().await {
+            match event {
+                IERC20ContractEvents::ApprovalFilter(f) => {
+
+                    let event=ContractsEventsModel{
+                        From:format!("{:?}", f.owner), 
+                        To:format!("{:?}", f.spender), 
+                        Value: f.value.to_string().clone(),
+                        EventType:"Approval".to_string(),
+                        blockNumber:meta.block_number.as_u64(),
+                        TransactionHash:meta.transaction_hash.to_string(),
+                    };
+                    event_vec.push(event.clone());
+                    println!("ApprovalFilter {f:?}");
+                },
+                IERC20ContractEvents::TransferFilter(f) => {
+                    let event=ContractsEventsModel{
+                        From:format!("{:?}", f.from), 
+                        To:format!("{:?}", f.to), 
+                        Value: f.value.to_string().clone(),
+                        EventType:"Transfer".to_string(),
+                        blockNumber:meta.block_number.as_u64(),
+                        TransactionHash:meta.transaction_hash.to_string(),
+                    };
+                    event_vec.push(event.clone());
+                    println!("TransferFilter {f:?}");
+                },
+            }
+        }
+        // println!("event_vec: {}", serde_json::to_string(&event_vec)?);
+        Ok(event_vec)
+    }
+    
 
     pub async fn deploy_erc20Mintable_deposit10_Weth()  { 
         // 1. compile the contract (note this requires that you are inside the `examples` directory) and
@@ -242,6 +364,8 @@ cfg_if! { if #[cfg(feature = "ssr")] {
     {
         let weth_erc20_contract = IERC20Contract::new(erc20_address, client.clone());
         weth_erc20_contract.approve(spender_address, parse_ether(ammout).unwrap()).send().await.unwrap().await.unwrap();
+
+
     }
 
     async fn create_factory(

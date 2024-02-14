@@ -51,8 +51,8 @@ pub fn Deployments() -> impl IntoView {
                         <TableRow>
                             <TableHeaderCell min_width=true>"#"</TableHeaderCell>
                             <TableHeaderCell>"Name"</TableHeaderCell>
+                            <TableHeaderCell>"Address"</TableHeaderCell>
                             <TableHeaderCell>"Type"</TableHeaderCell>
-                            <TableHeaderCell>"Name"</TableHeaderCell>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

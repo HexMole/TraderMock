@@ -164,7 +164,7 @@ pub fn DocLayout() -> impl IntoView {
 
     let drawer_content = view! {
         <DrawerSection header=move || view! {
-            <Icon icon=BsIcon::BsBook margin=Margin::Right(Size::Em(1.0))></Icon> "Uni Vizualizer"
+            <Icon icon=BsIcon::BsList margin=Margin::Right(Size::Em(1.0))></Icon> "Uni Vizualizer"
         }>
             <Stack orientation=StackOrientation::Vertical spacing=Size::Zero class="link-stack">
                 <Link href=DocRoutes::Overview class="item" on:click=move |_| close_doc_drawer_on_mobile()>"Overview"</Link>
