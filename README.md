@@ -7,7 +7,10 @@
 
 This is a template for use with the [Leptos](https://github.com/leptos-rs/leptos) web framework and the [cargo-leptos](https://github.com/akesson/cargo-leptos) tool using [Axum](https://github.com/tokio-rs/axum).
 
-## Creating your template repo
+## Foundry - Anvil 
+
+Project contains useful test cases for Fondry anvil. Deployment and test of various contract such as creating ERC20 Tokens, Uniswap trade pair and trades.
+Also useful utilities to retrieve various events in the blockchain.
 
 If you don't have `cargo-leptos` installed you can install it with
 
